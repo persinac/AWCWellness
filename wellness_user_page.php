@@ -11,6 +11,7 @@
 
 	<!-- Custom CSS -->
 	<link href="dist/css/wellness_progress.css" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="dist/css/jquery.datepick.css">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -47,7 +48,21 @@
 
 	</div>
 		<div id="data_container">
-			<div id="activity_form">
+			<div id="div_activity_form">
+			<form method="POST" id="activity_form" class="act_">
+                <div id="activity_row">
+					<h4>New Activity</h4>
+                    <p></p>
+                    Activity: <input type="text" name="activity" class="_activity" id="_activity"/>
+                    <p></p>
+                    Date Achieved: <input type="text" name="date" class="_datepicker" id="act_datepicker"/>
+					<p></p>
+					Duration: <input type="text" name="duration" class="_duration" id="duration"/> minutes
+                    <p></p>
+                    <p></p>
+				</div
+			</form>
+			<button class="btn btn-success" id="submit">submit</button>
 			</div>
 			<div id="activity_list">
 			</div>
@@ -59,14 +74,23 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="dist/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="dist/js/jquery.plugin.js"></script> 
+    <script type="text/javascript" src="dist/js/jquery.datepick.js"></script>
     
 	<script> 
 	
 	$(document).ready(function() {
 		getUserFirstName();
 	});
-	
+	$(function() {
+		$("#act_datepicker").datepick({dateFormat: 'yyyy-mm-dd', alignment: 'bottom', changeMonth: true, autoSize: true});
+	});	
 	/********************************* GETTER METHODS *********************************/
+	$(function(){
+		$("button#submit").click(function() {
+			submitActivity();
+		});
+	});
 	
 	/*
 	* Called when page is finished loading
@@ -110,6 +134,33 @@
 		$('#greeting').html(html_sec1);
 	}
 	
+/************************************ SUBMITS ************************************************/
+	function submitActivity() {
+		var datastring = $("#activity_form").serializeArray();
+		var sendRequest = true;
+		var activity_name = "";
+		var activity_date = "";
+		var activity_time = "";
+		
+		//alert("DATASTRING: " + datastring.toString());
+		activity_name = datastring[0].value;
+		activity_date = datastring[1].value;
+		activity_time = datastring[2].value;
+		
+		//sendRequest = false;
+		alert(activity_name + ", " +activity_date+", "+activity_time);
+		$.ajax({
+			type: "POST",
+			url: "wellness_addActivity.php",
+			data: { "activity_name" : activity_name,
+			"activity_date" : activity_date,
+				"activity_time" : activity_time
+				},
+			success: function(data) {
+				 alert('Data send:' + data);
+			}
+		});
+	}
 	
 	</script
 	
