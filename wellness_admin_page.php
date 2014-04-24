@@ -86,7 +86,6 @@
     
     <script>
 	$(document).ready(function() {
-		event.preventDefault();
 		getWeeklyTotal();
 		getCompleteTotal();
 	});
@@ -95,8 +94,8 @@
 	
 	/*
 	* Called when page is finished loading
-	* Used to gather all the WoDs specific to Admin's
-	* box. 
+	* Used to gather the weekly total of 
+	* each individual user
 	*
 	*/
 	function getWeeklyTotal()
@@ -118,9 +117,14 @@
 				alert('error loading WeeklyTotal!');
 			}
 		});
-		//alert("Past WODs FIN");
 	}
 	
+	/*
+	* Called when page is finished loading
+	* Used to gather the complete total of 
+	* each individual user
+	*
+	*/
 	function getCompleteTotal()
 	{
 		var html = "";

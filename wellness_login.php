@@ -77,7 +77,7 @@ if (isset($_POST['username']))
       $MM_redirectLoginSuccess = $_SESSION['PrevUrl'];	
     }
 	$returnVal = isAuthorized($_SESSION['MM_Admin'], $_SESSION['MM_Username']);
-
+	
    	if ($returnVal == "0") {$link = "wellness_user_page.php";} //Default Blank 
 	if ($returnVal == "21") {$link = "wellness_admin_page.php";} // COMMENT 
 	if ($returnVal == "9") {$link = "Error401UnauthorizedAccess.php";} // COMMENT 
