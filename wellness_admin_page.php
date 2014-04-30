@@ -42,7 +42,7 @@
             <ul class="nav navbar-nav">
               <li class="active"><a href="#">Home</a></li>
               <li><a href="wellness_admin_overview">Overview</a></li>
-              <li><a href="wellness_progress">My Progress</a></li>
+              <li><a href="wellness_user_page">My Progress</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->

@@ -12,16 +12,11 @@
 	<!-- Custom CSS -->
 	<link href="dist/css/wellness_progress.css" rel="stylesheet">
 	<link rel="stylesheet" type="text/css" href="dist/css/jquery.datepick.css">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+
   </head>
   <body>
     
-	<div id="container">
+<div id="container">
 		<!-- Static navbar -->
       <div class="navbar navbar-default" role="navigation">
         <div class="container-fluid">
@@ -46,29 +41,41 @@
 
 	<h1 id="greeting"><div id="div_greet"></div></h1>
 
-	</div>
-		<div id="data_container">
-			<div id="div_activity_form">
+	
+	<div id="data_container">
+		<div id="div_activity_form">
 			<form method="POST" id="activity_form" class="act_">
-                <div id="activity_row">
+				<div id="activity_row">
 					<h4>New Activity</h4>
-                    <p></p>
-                    Activity: <input type="text" name="activity" class="_activity" id="_activity"/>
-                    <p></p>
-                    Date Achieved: <input type="text" name="date" class="_datepicker" id="act_datepicker"/>
+					<p></p>
+					Activity: <input type="text" name="activity" class="_activity" id="_activity"/>
+					<p></p>
+					Date of Activity: <input type="text" name="date" class="_datepicker" id="act_datepicker"/>
 					<p></p>
 					Duration: <input type="text" name="duration" class="_duration" id="duration"/> minutes
-                    <p></p>
-                    <p></p>
-				</div
+					<p></p>
+					<p></p>
+				</div>
+				<button class="btn btn-success" id="submit_activity">submit</button>
 			</form>
-			<button class="btn btn-success" id="submit">submit</button>
-			</div>
-			<div id="activity_list">
-			</div>
-			<div id="leaderboard">
+			
+		</div>
+		<div id="activity_list">
+			<h4>Past Cardio</h4>
+			<table id="tbl_past_wod" rules="cols" cellpadding="10px">
+				<tr>
+					<th>Date</th>
+					<th>Type of Cardio</th>
+					<th>Duration</th>
+				</tr>
+				<tbody class="tbl_body_past_actvs">
+				</tbody>
+			</table>
+		</div>
+		<div id="leaderboard">
 		</div>
 	</div>
+</div>
 	
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -81,16 +88,19 @@
 	
 	$(document).ready(function() {
 		getUserFirstName();
+		getUserActivities();
 	});
 	$(function() {
 		$("#act_datepicker").datepick({dateFormat: 'yyyy-mm-dd', alignment: 'bottom', changeMonth: true, autoSize: true});
 	});	
-	/********************************* GETTER METHODS *********************************/
-	$(function(){
-		$("button#submit").click(function() {
-			submitActivity();
+	$(function() {
+		$( "#submit_activity" ).click(function( event ) {
+		console.log("submit activity pressed");
+		submitActivity();
+		event.preventDefault();
 		});
 	});
+	/********************************* GETTER METHODS *********************************/
 	
 	/*
 	* Called when page is finished loading
@@ -114,10 +124,52 @@
 		});
 	}
 	
+	function getUserActivities()
+	{
+		var html = "";
+		$.ajax(
+		{ 
+			url: "getUserActivities.php", //the script to call to get data  
+			dataType: "json",
+			success: function(response) //on recieve of reply
+			{
+				//console.log(response);
+				loadUserActivities(response);
+			} 
+		});
+	}
+	
 	/******************************** LOAD **************************************/
 
 	/*
-	* Called in getPastWODS function.
+	* Called in getUserActivities function.
+	* Parses the ajax request - JSON - format, and
+	* places the results in descending order in a table 
+	* in the appropriate DOM.
+	*
+	*/
+	function loadUserActivities(data)
+	{
+		var html_sec1 = "";
+		var date = "";
+		var activity = "";
+		var duration = "";
+		
+		for(var i = 0; i < data.length; i++) {
+			date = data[i].DateofActivity;
+			activity = data[i].activity;
+			duration = data[i].duration_of_activity;
+			///console.log(date + ", " + activity + ", " + duration);
+			html_sec1 += "<tr><td>"+
+				data[i].DateofActivity+"</td><td>"+data[i].activity+"</td><td>"+data[i].duration_of_activity+"</td></tr>";
+		}
+		//Update html content
+		$('.tbl_body_past_actvs').empty();
+		$('.tbl_body_past_actvs').html(html_sec1);
+	}
+	
+	/*
+	* Called in getUserFirstName function.
 	* Parses the ajax request - JSON - format, and
 	* places the results in descending order in a table 
 	* in the appropriate DOM.
@@ -135,34 +187,50 @@
 	}
 	
 /************************************ SUBMITS ************************************************/
-	function submitActivity() {
+
+	function submitActivity()
+	{
 		var datastring = $("#activity_form").serializeArray();
-		var sendRequest = true;
 		var activity_name = "";
 		var activity_date = "";
 		var activity_time = "";
 		
-		//alert("DATASTRING: " + datastring.toString());
+		//console.log("DATASTRING: " + datastring);
 		activity_name = datastring[0].value;
 		activity_date = datastring[1].value;
 		activity_time = datastring[2].value;
 		
-		//sendRequest = false;
-		alert(activity_name + ", " +activity_date+", "+activity_time);
+		console.log("Details: "+activity_name + ", " +activity_date+", "+activity_time);
 		$.ajax({
 			type: "POST",
-			url: "wellness_addActivity.php",
-			data: { "activity_name" : activity_name,
-			"activity_date" : activity_date,
-				"activity_time" : activity_time
-				},
-			success: function(data) {
-				 alert('Data send:' + data);
+            url: "wellness_addActivity.php",
+			datatype: "text",
+			data: {"name" : activity_name, 
+				"date" : activity_date,
+				"time" : activity_time },
+            success: function(data) {
+                 console.log('Data send:' + data);
+				 clearForm();
+				 getUserActivities();
+            },
+			error: function(data) {
+				console.log("ERROR: " + data);
+				for(var i = 0; i < data.length; i++) {
+					console.log(data[i].toString());
+					}
 			}
-		});
+			
+        });
 	}
 	
-	</script
+	function clearForm() {
+		$('#activity_form input').each(function(index, element) {
+			console.log(index + " : " + $(this).text());
+			$(this).val('');
+		});	
+	}
+	
+	</script>
 	
   </body>
 </html>
