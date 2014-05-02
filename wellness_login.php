@@ -35,6 +35,13 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
 // *** Validate request to login to this site.
 if (!isset($_SESSION)) {
   session_start();
+} 
+if(isset($_SESSION['MM_Username'])){
+	echo '<script type="text/javascript">';
+	echo 'alert("Already logged in, redirecting");';
+	echo '</script>';
+	$link = "wellness_user_page.php";
+	header("Location: $link");
 }
 
 $loginForm = $_SERVER['PHP_SELF'];

@@ -1,10 +1,19 @@
+<?php require_once('Connections/wellnessConn.php'); ?>
+<?php 
+session_start();
+if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
+
+} else {
+	header("Location: WellnessUnauthorizedAccess.php");
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Page</title>
+    <title>Overview Page</title>
 
     <!-- Bootstrap -->
     <link href="dist/css/bootstrap.min.css" rel="stylesheet">
@@ -40,8 +49,8 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="wellness_admin_overview">Overview</a></li>
+              <li><a href="wellness_index">Home</a></li>
+              <li class="active"><a href="#">Overview</a></li>
               <li><a href="wellness_user_page">My Progress</a></li>
             </ul>
           </div><!--/.nav-collapse -->

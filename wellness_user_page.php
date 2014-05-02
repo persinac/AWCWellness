@@ -1,3 +1,12 @@
+<?php require_once('Connections/wellnessConn.php'); ?>
+<?php 
+session_start();
+if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
+   //echo 'Set and not empty, and no undefined index error!';
+} else {
+	header("Location: WellnessUnauthorizedAccess.php");
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -31,9 +40,9 @@
           </div>
           <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
-              <li class="active"><a href="#">Home</a></li>
-              <li><a href="#">Overview</a></li>
-              <li><a href="#">My Progress</a></li>
+              <li ><a href="wellness_index">Home</a></li>
+              <li><a href="wellness_admin_page">Overview</a></li>
+              <li class="active"><a href="#">My Progress</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
@@ -48,7 +57,14 @@
 				<div id="activity_row">
 					<h4>New Activity</h4>
 					<p></p>
-					Activity: <input type="text" name="activity" class="_activity" id="_activity"/>
+					Activity: <select name="activity" class="_activity" id="_activity">
+						<option value="Walking">Walking</option>
+						<option value="Running">Running</option>
+						<option value="Jogging">Jogging</option>
+						<option value="Cycling">Cycling</option>
+						<option value="Hiking">Hiking</option>
+						<option value="Other">Other Aeorbic Activity</option>
+						</select>
 					<p></p>
 					Date of Activity: <input type="text" name="date" class="_datepicker" id="act_datepicker"/>
 					<p></p>
@@ -73,8 +89,39 @@
 			</table>
 		</div>
 		<div id="leaderboard">
+			<h4>Stats</h4>
+			<div id="total_minutes">
+				<h5>Total Minutes:</h5>
+				<div id="total_minutes_data" class="stats_data"></div>
+			</div>
+			<div id="total_grouped_minutes">
+				<h5>Total Grouped Minutes:</h5>
+				<div id="total_grouped_minutes_data" class="stats_data"></div>
+			</div>
+			<div id="total_weekly_minutes">
+				<h5>Total Weekly Minutes:</h5>
+				<div id="total_weekly_minutes_data" class="stats_data"></div>
+			</div>
+			<div id="total_weekly_grouped_minutes">
+				<h5>Total Weekly Grouped Minutes:</h5>
+				<div id="total_weekly_grouped_minutes_data" class="stats_data"></div>
+			</div>
 		</div>
+		<button class="btn btn-primary" id="change_pw">
+        Change Password
+      </button>
 	</div>
+	<div id="popup">
+		<div>Enter New Password:</div>
+		<input id="new_pass" type="password"/>
+		<div>Confirm Password:</div>
+		<input id="confirm_pass" type="password"/>
+		<p></p>
+		<button onclick="done()">Submit</button>
+		<button onclick="cancel()">Cancel</button>		
+	</div>
+</div>
+	
 </div>
 	
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -87,8 +134,14 @@
 	<script> 
 	
 	$(document).ready(function() {
+	var uid = "<?php echo $_SESSION['MM_UserID'];?>" ;
+		console.log("User ID: " + uid);
 		getUserFirstName();
 		getUserActivities();
+		getUserTotalActivities();
+		getUserGroupedTotalActivities();
+		getUserWeeklyTotalActivities();
+		getUserWeeklyGroupedTotalActivities();
 	});
 	$(function() {
 		$("#act_datepicker").datepick({dateFormat: 'yyyy-mm-dd', alignment: 'bottom', changeMonth: true, autoSize: true});
@@ -100,6 +153,45 @@
 		event.preventDefault();
 		});
 	});
+	
+	$("#change_pw").click(function () {
+		console.log("should open change pw modal...");
+		document.getElementById("popup").style.display = "block";
+	});
+	function done() { 
+    
+		var new_password = document.getElementById("new_pass").value;
+		var con_password = document.getElementById("confirm_pass").value;
+		var doesMatch = true;
+		var clean=/^[a-zA-Z0-9&_\.@]+$/;
+		if(clean.test(new_password)) {
+			if(new_password.length == con_password.length && doesMatch == true) {
+				for(var i =0; i < new_password.length; i++) {
+					if(new_password.charAt(i) != con_password.charAt(i)) {
+						doesMatch = false;
+					}
+				}
+			} else {
+				doesMatch = false;
+			}
+			
+			if(doesMatch == false) {
+				alert("Passwords do not match!");
+			} else {
+				//alert("Passwords match!");
+				document.getElementById("popup").style.display = "none";
+				updatePassword(new_password);
+			}	
+		}
+		else {
+			alert("Invalid characters");
+		}
+   	}
+	
+	function cancel() {
+		document.getElementById("popup").style.display = "none";
+	}
+	
 	/********************************* GETTER METHODS *********************************/
 	
 	/*
@@ -109,6 +201,8 @@
 	*/
 	function getUserFirstName()
 	{
+		
+		//console.log("User ID: " + uid);
 		var html = "";
 		//now load data into table
 		//alert("PRE-AJAX");
@@ -135,6 +229,70 @@
 			{
 				//console.log(response);
 				loadUserActivities(response);
+			} 
+		});
+	}
+	
+	function getUserTotalActivities()
+	{
+		console.log("get user total activities");
+		var html = "";
+		$.ajax(
+		{ 
+			url: "getUserTotalActivities.php", //the script to call to get data  
+			dataType: "json",
+			success: function(response) //on recieve of reply
+			{
+				console.log(response);
+				loadUserTotalActivities(response);
+			} 
+		});
+	}
+	
+	function getUserGroupedTotalActivities()
+	{
+		console.log("get user grouped total activities");
+		var html = "";
+		$.ajax(
+		{ 
+			url: "getUserGoupedTotalActivities.php", //the script to call to get data  
+			dataType: "json",
+			success: function(response) //on recieve of reply
+			{
+				console.log(response);
+				loadUserGroupedTotalActivities(response);
+			} 
+		});
+	}
+	
+	function getUserWeeklyTotalActivities()
+	{
+		console.log("get user weekly total activities");
+		var html = "";
+		$.ajax(
+		{ 
+			url: "getUserTotalWeeklyActivities.php", //the script to call to get data  
+			dataType: "json",
+			success: function(response) //on recieve of reply
+			{
+				console.log(response);
+				loadUserWeeklyTotalActivities(response);
+			} 
+		});
+	}
+	
+	function getUserWeeklyGroupedTotalActivities()
+	{
+		console.log("get user weekly grouped total activities");
+		var html = "";
+		$.ajax(
+		{ 
+			url: "getUserWeeklyGroupedActivities.php", //the script to call to get data  
+			dataType: "json",
+			success: function(response) //on recieve of reply
+			{
+				console.log(response);
+				loadUserWeeklyGroupedTotalActivities(response);
 			} 
 		});
 	}
@@ -186,6 +344,94 @@
 		$('#greeting').html(html_sec1);
 	}
 	
+	/*
+	* Called in getUserTotalActivities function.
+	* Parses the ajax request - JSON - format, and
+	* places the results in descending order in a table 
+	* in the appropriate DOM.
+	*
+	*/
+	function loadUserTotalActivities(data)
+	{
+	console.log("total activity loading: " + data);
+		var html_sec1 = "";
+		var totalMinutes = "";
+		totalMinutes = data[0].TotalActivity;
+		
+		html_sec1 += totalMinutes+" minutes";
+		//Update html content
+		$('#total_minutes_data').html(html_sec1);
+	}
+	
+	/*
+	* Called in getUserActivities function.
+	* Parses the ajax request - JSON - format, and
+	* places the results in descending order in a table 
+	* in the appropriate DOM.
+	*
+	*/
+	function loadUserGroupedTotalActivities(data)
+	{
+		var html_sec1 = "";
+		var activity = "";
+		var duration = "";
+		
+		for(var i = 0; i < data.length; i++) {
+			activity = data[i].activity;
+			duration = data[i].TotalActivity;
+			///console.log(date + ", " + activity + ", " + duration);
+			html_sec1 += activity +": "+duration;
+			html_sec1 += "<br>";
+		}
+		//Update html content
+		$('#total_grouped_minutes_data').empty();
+		$('#total_grouped_minutes_data').html(html_sec1);
+	}
+	
+	/*
+	* Called in getUserWeeklyTotalActivities function.
+	* Parses the ajax request - JSON - format, and
+	* places the results in descending order in a table 
+	* in the appropriate DOM.
+	*
+	*/
+	function loadUserWeeklyTotalActivities(data)
+	{
+	console.log("weekly activity loading: " + data);
+		var html_sec1 = "";
+		var totalMinutes = "";
+		totalMinutes = data[0].WeeklyActivity;
+		
+		html_sec1 += totalMinutes+" minutes";
+		//Update html content
+		$('#total_weekly_minutes_data').html(html_sec1);
+	}
+	
+	/*
+	* Called in getUserActivities function.
+	* Parses the ajax request - JSON - format, and
+	* places the results in descending order in a table 
+	* in the appropriate DOM.
+	*
+	*/
+	function loadUserWeeklyGroupedTotalActivities(data)
+	{
+		var html_sec1 = "";
+		var activity = "";
+		var duration = "";
+		
+		for(var i = 0; i < data.length; i++) {
+			activity = data[i].activity;
+			duration = data[i].WeeklyActivity;
+			///console.log(date + ", " + activity + ", " + duration);
+			html_sec1 += activity +": "+duration;
+			html_sec1 += "<br>";
+		}
+		//Update html content
+		$('#total_weekly_grouped_minutes_data').empty();
+		$('#total_weekly_grouped_minutes_data').html(html_sec1);
+	}
+	
 /************************************ SUBMITS ************************************************/
 
 	function submitActivity()
@@ -201,6 +447,7 @@
 		activity_time = datastring[2].value;
 		
 		console.log("Details: "+activity_name + ", " +activity_date+", "+activity_time);
+		
 		$.ajax({
 			type: "POST",
             url: "wellness_addActivity.php",
@@ -209,9 +456,13 @@
 				"date" : activity_date,
 				"time" : activity_time },
             success: function(data) {
-                 console.log('Data send:' + data);
-				 clearForm();
-				 getUserActivities();
+				console.log('Data send:' + data);
+				clearForm();
+				getUserActivities();
+				getUserTotalActivities();
+				getUserGroupedTotalActivities();
+				getUserWeeklyTotalActivities();
+				getUserWeeklyGroupedTotalActivities();
             },
 			error: function(data) {
 				console.log("ERROR: " + data);
@@ -220,6 +471,24 @@
 					}
 			}
 			
+        });
+	}
+	
+	function updatePassword(new_pw)
+	{
+		console.log("Details: "+new_pw);
+		
+		$.ajax({
+			type: "POST",
+            url: "wellness_updatePassword.php",
+			datatype: "text",
+			data: {"password" : new_pw},
+            success: function(data) {
+				console.log('Data send:' + data);
+            },
+			error: function(data) {
+				console.log("ERROR: " + data);
+			}
         });
 	}
 	
