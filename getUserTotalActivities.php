@@ -8,11 +8,7 @@ echo ", UserID: " . $_SESSION['MM_UserID'];
 */
 $colname_getUser = "-1";
 
-if(!(isset($_SESSION['MM_Username'])))
-{
-	header("Location: Error401UnauthorizedAccess.php");
-	
-} else if (isset($_SESSION['MM_UserID'])) {
+if (isset($_SESSION['MM_UserID'])) {
   $colname_getUser = $_SESSION['MM_UserID'];
 }
 

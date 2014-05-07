@@ -31,20 +31,7 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
   return $theValue;
 } 
 } #end function
-if(!(isset($_SESSION['MM_Username'])))
-{
-	header("Location: Error401UnauthorizedAccess.php");
-	
-} else if (isset($_SESSION['MM_UserID'])) {
-  $colname_getUserWODs = $_SESSION['MM_UserID'];
-}
-########
-#REMOVE ME
-########
-#if (!(isset($_SESSION['MM_UserID']))) {
-#  $colname_getUserWODs = 1;
-#  $_SESSION['MM_Username']= "persinac";
-#}
+
 mysql_select_db($database_wellConn, $wellConn);
 
 ###
@@ -58,7 +45,6 @@ GROUP BY user_id
 ORDER BY WeeklyActivity DESC";
 $getAdminWeeklyTotals = mysql_query($query_getAdminWeeklyTotals, $wellConn) or die(mysql_error());
 $totalRows_getAdminWeeklyTotals = mysql_num_rows($getAdminWeeklyTotals);
-//echo $totalRows_getAdminWODs;
 $results = array();
 
 for($i = 0; $i < $totalRows_getAdminWeeklyTotals; $i++)

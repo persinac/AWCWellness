@@ -43,6 +43,7 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
               <li ><a href="wellness_index">Home</a></li>
               <li><a href="wellness_admin_page">Overview</a></li>
               <li class="active"><a href="#">My Progress</a></li>
+			  <li id="logout"><a href="#">Logout</a></li>
             </ul>
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
@@ -158,6 +159,21 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 		console.log("should open change pw modal...");
 		document.getElementById("popup").style.display = "block";
 	});
+	
+	$("#logout").click(function () {
+		console.log("logging out...");
+		
+		$.ajax(
+		{ 
+			url: "wellness_logout.php", //the script to call to get data  
+			success: function(response) //on recieve of reply
+			{
+				console.log("logged out...");
+				window.location.replace("http://cboxbeta.com/wellness_index");
+			} 
+		});
+	});
+	
 	function done() { 
     
 		var new_password = document.getElementById("new_pass").value;
