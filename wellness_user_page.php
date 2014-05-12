@@ -328,14 +328,17 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 		var date = "";
 		var activity = "";
 		var duration = "";
+		var actID = "";
 		
 		for(var i = 0; i < data.length; i++) {
 			date = data[i].DateofActivity;
 			activity = data[i].activity;
 			duration = data[i].duration_of_activity;
+			actID = data[i].activity_id;
 			///console.log(date + ", " + activity + ", " + duration);
 			html_sec1 += "<tr><td>"+
-				data[i].DateofActivity+"</td><td>"+data[i].activity+"</td><td>"+data[i].duration_of_activity+"</td></tr>";
+				data[i].DateofActivity+"</td><td>"+data[i].activity+"</td><td>"
+				+data[i].duration_of_activity+"</td><td><input type=\"button\" value=\"Remove\" id=\"removebutton\" onclick=\"removeActivity("+actID+");\"></td></tr>";
 		}
 		//Update html content
 		$('.tbl_body_past_actvs').empty();
@@ -447,6 +450,31 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 		$('#total_weekly_grouped_minutes_data').empty();
 		$('#total_weekly_grouped_minutes_data').html(html_sec1);
 	}
+	
+
+/*******************************************************************************/
+
+function removeActivity(activity_id) {
+	
+	console.log("removing activity: " + activity_id);
+		var html = "";
+		$.ajax(
+		{ 
+			type: "POST",
+			url: "wellness_removeUserActivity.php", //the script to call to get data  
+			data: { "activity_id" : activity_id },
+			dataType: "text",
+			success: function(response) //on receive of reply
+			{
+				console.log(response);
+				getUserActivities();
+				getUserTotalActivities();
+				getUserGroupedTotalActivities();
+				getUserWeeklyTotalActivities();
+				getUserWeeklyGroupedTotalActivities();
+			} 
+		});
+}	
 	
 /************************************ SUBMITS ************************************************/
 

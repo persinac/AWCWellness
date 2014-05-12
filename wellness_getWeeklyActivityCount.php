@@ -15,7 +15,7 @@ $t_string_builder = ""; //nice to have
 $query_getActivities = "select activity, COUNT(activity) AS activityCount
 from work_activity_log wal
 JOIN work_users wu ON wu.idwork_users = wal.user_id
-WHERE yearweek('{$date}') = yearweek(CURRENT_DATE)
+WHERE yearweek('{$date}') = yearweek(date_of_activity)
 GROUP BY activity";
 
 $getActivities = mysql_query($query_getActivities, $wellConn) or die(mysql_error());

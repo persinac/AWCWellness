@@ -20,7 +20,7 @@ mysql_select_db($database_wellConn, $wellConn);
 # Defualt view 
 ###
 
-$query_getUserActivities = "select DATE_FORMAT(date_of_activity, '%m-%d-%Y') AS 'DateofActivity', activity, duration_of_activity from work_activity_log
+$query_getUserActivities = "select DATE_FORMAT(date_of_activity, '%m-%d-%Y') AS 'DateofActivity', activity, duration_of_activity, activity_id from work_activity_log
 where user_id = '{$colname_getUser}' ORDER BY DateofActivity";
 $getUserActivities = mysql_query($query_getUserActivities, $wellConn) or die(mysql_error());
 $totalRows_getUserActivities = mysql_num_rows($getUserActivities);

@@ -88,18 +88,18 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 		<div id="archives">
 			<h3>Past Results</h3>
 			<ul>
-              <li><a href="#">Week 1</a></li>
-              <li><a href="#">Week 2</a></li>
-              <li><a href="#">Week 3</a></li>
-			  <li><a href="#">Week 4</a></li>
-			  <li><a href="#">Week 5</a></li>
-              <li><a href="#">Week 6</a></li>
-              <li><a href="#">Week 7</a></li>
-			  <li><a href="#">Week 8</a></li>
-			  <li><a href="#">Week 9</a></li>
-              <li><a href="#">Week 10</a></li>
-              <li><a href="#">Week 11</a></li>
-			  <li><a href="#">Week 12</a></li>
+              <li onclick="showWeekResults(1);"><a href="#">Week 1</a></li>
+              <li onclick="showWeekResults(2);"><a href="#">Week 2</a></li>
+              <li onclick="showWeekResults(3);"><a href="#">Week 3</a></li>
+			  <li onclick="showWeekResults(4);"><a href="#">Week 4</a></li>
+			  <li onclick="showWeekResults(5);"><a href="#">Week 5</a></li>
+              <li onclick="showWeekResults(6);"><a href="#">Week 6</a></li>
+              <li onclick="showWeekResults(7);"><a href="#">Week 7</a></li>
+			  <li onclick="showWeekResults(8);"><a href="#">Week 8</a></li>
+			  <li onclick="showWeekResults(9);"><a href="#">Week 9</a></li>
+              <li onclick="showWeekResults(10);"><a href="#">Week 10</a></li>
+              <li onclick="showWeekResults(11);"><a href="#">Week 11</a></li>
+			  <li onclick="showWeekResults(12);"><a href="#">Week 12</a></li>
             </ul>
 			
 		</div>
@@ -118,14 +118,17 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 	
 	google.load('visualization', '1.0', {'packages':['corechart']});
 	$(document).ready(function() {
+		getWeekNumber();
 		getWeeklyTotal();
 		getCompleteTotal();
-		getWeekNumber();
-		//getWeeklyMinutes();
-		loadGraphs();
+		//set timer so that the getWeekNumber function has time
+		//to execute and assign the week variable
+		window.setTimeout(function(){loadGraphs(week)}, 500);
 	});
+	
 	var week = 0;
 	var header = "";
+	
 	$("#logout").click(function () {
 		console.log("logging out...");
 		
@@ -141,6 +144,19 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 	});
 	
 	/********************************* GETTER METHODS *********************************/
+	
+	function showWeekResults(week_num)
+	{
+		console.log(week_num);
+		$('#chart_div').empty();
+		$('#activity_chart_div').empty();
+		for(var i = 0; i < data_array.length; i++) {
+			console.log("pop! goes the value..." + data_array[i]);
+			data_array.pop();
+		}
+		getSpecifiedWeeklyTotal(week_num)
+		loadGraphs(week_num);
+	}
 	
 	/*
 	* Called when page is finished loading
@@ -172,6 +188,7 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 				alert('error loading WeeklyTotal!');
 			}
 		});
+		
 	}
 	
 	
@@ -195,6 +212,39 @@ if(isset($_SESSION['MM_Username']) && !empty($_SESSION['MM_Username'])) {
 		  success: function(response) //on recieve of reply
 		  {
 			loadPastWODS(response);
+		  },
+		  error: function(){
+				alert('error loading WeeklyTotal!');
+			}
+		});
+	}
+	
+	/*
+	* Called when page is finished loading
+	* Used to gather the weekly total of 
+	* each individual user
+	*
+	*/
+	function getSpecifiedWeeklyTotal(week_num)
+	{
+		var html = "";
+		$('.tbl_past_wod').html(html);
+		var new_date = getStartingDate(week_num);
+		//now load data into table
+		console.log("getSpecifiedWeeklyTotal: " + new_date);
+		$.ajax(
+		{ 
+		  type:"POST",                                     
+		  url:"wellness_getAdminWeeklyTotals.php",         
+		  data: { "week" : new_date }, //insert argumnets here to pass to getAdminWODs
+		  dataType: "json",                //data format      
+		  success: function(response) //on recieve of reply
+		  {
+			loadPastWODS(response);
+			html = "Users Week "+week_num+" activity total";
+			header = "Week " + week_num + " daily activity level";
+			$('#weekly_total_header').empty();
+			$('#weekly_total_header').html(html);
 		  },
 		  error: function(){
 				alert('error loading WeeklyTotal!');
@@ -255,7 +305,7 @@ function loadPastWODS(data_wods)
 		user_id = data_wods[i].user_id;
 		name = data_wods[i].Name;
 		weekly_act = data_wods[i].WeeklyActivity;
-		
+		console.log("user_id: " + user_id + ", name: "+name+", weekly_act: " + weekly_act);
 		html_sec1 += "<tr class="+sec1_classID+">";
 		html_sec1 += "<td>"+user_id+"</td>";
 		html_sec1 += "<td>"+name+"</td>";
@@ -308,11 +358,12 @@ function loadTotalActivity(data_wods)
 
 /********************************* Load and draw graph functions***********************************************/
 
-function loadGraphs()
+function loadGraphs(week_number)
 {
-	getWeeklyMinutes();
+	console.log("load graphs week number: " + week_number);
+	getWeeklyMinutes(week_number);
 	seeArray(data_array);
-	submitForWeeklyActivityCount(getStartingDate(week));
+	submitForWeeklyActivityCount(getStartingDate(week_number));
     //drawChart();
 	//drawWeeklyActivityBreakdown();
 }
@@ -323,7 +374,7 @@ function drawDailyMinutesChart(minutes) {
 	// Create the data table.
 	var data = new google.visualization.DataTable();
 
-	console.log("Minutes: " +minutes[0]+" "+minutes[1]+
+	console.log("Minutes, Sunday: " +minutes[0]+" "+minutes[1]+
 	" "+minutes[2]+" "+minutes[3]+" "
 	+minutes[4]+" "+minutes[5]+" "+minutes[6]);
 	
@@ -354,9 +405,8 @@ function drawWeeklyActivityBreakdown(activities) {
 	
 	var data = new google.visualization.DataTable();
 
-	console.log("activities: " +activities[0].activity+" "+activities[1].activity+
-		" "+activities[2].activity+" "+activities[3].activity+" "+activities[4].activity+
-		" ");
+	/*console.log("activities: " +activities[0].activity+" "+activities[1].activity+
+		" "+activities[2].activity+" "+activities[3].activity+" ");*/
 	
 	data.addColumn('string', 'Day');
 	data.addColumn('number', 'Minutes');
@@ -386,6 +436,7 @@ function drawWeeklyActivityBreakdown(activities) {
         google.visualization.events.addListener(chart, 'select', selectHandler); 
 	
 	chart.draw(data, options);
+	
 }
 
 /*******************Functions to handle AJAX data submission for graphs***********************************/
@@ -411,7 +462,7 @@ function submitDatesForDailyMinutes(new_date)
 
 function submitForWeeklyActivityCount(new_date)
 {
-	console.log("weekly activities");
+	console.log("weekly activities, date: " + new_date);
 	$.ajax(
 		{ 
 		  type:"POST",                                     
@@ -420,7 +471,7 @@ function submitForWeeklyActivityCount(new_date)
 		  dataType: "json",                //data format      
 		  success: function(response) //on recieve of reply
 		  {
-			console.log(response);
+			console.log("activity count: "+response);
 			drawWeeklyActivityBreakdown(response);
 		  },
 		  error: function(){
@@ -433,7 +484,9 @@ function submitForWeeklyActivityCount(new_date)
 
 
 var data_array = new Array();
-function getWeeklyMinutes() {
+
+function getWeeklyMinutes(week) {
+	console.log("getweeklyminutes week = " + week);
 	var startDate = getStartingDate(week);
 	var startDay = parseInt(startDate.substring(8, 10));
 	var temp = "";
@@ -458,18 +511,32 @@ function getWeeklyMinutes() {
 		}
 		console.log("new startday: " + startDay);
 		newStartDate = startDate.substring(0, 8) + startDay;
+		console.log("date.push: "+newStartDate);
 		//call function to run the ajax call, pass the new startdate into function
-		data_array.push(newStartDate);
-		//console.log("submitDate: "+submitDates(newStartDate));		
+		data_array[j] = newStartDate;
+				
 	}
 	submitDatesForDailyMinutes(data_array);
 }
 
 function getStartingDate(weeknum)
 {
-	var startingdate = '2014-05-04';
+	console.log("getStartingDate weeknum = " + weeknum);
+	var startingdate = '';
 	if(weeknum == 1) {
 		startingdate = '2014-05-04';
+	} else if(weeknum == 2) {
+		startingdate = '2014-05-11';
+	} else if(weeknum == 3) {
+		startingdate = '2014-05-18';
+	} else if(weeknum == 4) {
+		startingdate = '2014-05-25';
+	} else if(weeknum == 5) {
+		startingdate = '2014-06-01';
+	} else if(weeknum == 6) {
+		startingdate = '2014-06-08';
+	} else if(weeknum == 7) {
+		startingdate = '2014-06-15';
 	}
 	return startingdate;
 }

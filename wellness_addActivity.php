@@ -28,8 +28,14 @@ $t_string_builder = ""; //nice to have
 # MySql insert
 #
 #######
+$query_getMaxActivityID = "SELECT MAX(activity_id) FROM work_activity_log";
+$getMaxActivityID = mysql_query( $query_getMaxActivityID, $wellConn );
+$row = mysql_fetch_array($getMaxActivityID);
 
-$query_insert_wod = "insert into work_activity_log values ('{$t_user_id}', '{$t_activity}', '{$t_date}', '{$t_duration}')";
+$maxID = $row[0];
+$newMaxID = $maxID + 1;
+
+$query_insert_wod = "insert into work_activity_log values ('{$t_user_id}', '{$t_activity}', '{$t_date}', '{$t_duration}', '{$newMaxID}')";
 //echo $query_insert_wod;
 $retval = mysql_query( $query_insert_wod, $wellConn );
 if(! $retval )

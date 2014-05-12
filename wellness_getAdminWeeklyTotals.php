@@ -34,6 +34,15 @@ function GetSQLValueString($theValue, $theType, $theDefinedValue = "", $theNotDe
 
 mysql_select_db($database_wellConn, $wellConn);
 
+$t_week_num = $_POST['week'];
+$t_week_query = "";
+if(strlen($t_week_num) > 0) {
+	$t_week_num = "date_of_activity";
+	$t_week_query = " AND yearweek(date_of_activity) = yearweek(CURRENT_DATE) ";
+} else {
+	$t_week_query = " AND yearweek('{$t_week_num}') = yearweek(date_of_activity) ";
+}
+
 ###
 # Defualt view 
 ###
